@@ -1,62 +1,117 @@
+var DomMan = function() {
+  this.name = "DomMan";
+};
+DomMan.prototype.get = query => {
+  let element;
+  element = document.querySelector(query);
+  if (element == null) element = document.getElementById(query);
+  return element;
+};
 
-// console.log( findThreesInArray([1,2,4,5,6,7,8,3,3,4,2,1,2]) )
-// console.log( findThreesInArray([]) )
-// console.log( findThreesInArray([1,2,4,5,6,7,8,3,3,4,2,1,2],"test") )
+DomMan.prototype.addElement = (element, parentElement) => {
+  parentElement.appendChild(element);
+  return this;
+};
 
-function findThreesInArray(arr) {
+DomMan.prototype.deleteElement = id => {
+  let el = DomMan.prototype.get(id);
+  if (el == null) return;
+  el.remove();
+  return this;
+};
 
-    var ans = []
-    if( Array.isArray(arr) || arguments.length === 1 )
-    {
-        arr.forEach(element => {
-          if( element == 3 )
-            ans.push(pow(element))
-        });
-    }
-    return ans;
-}
+DomMan.prototype.createElement = (
+  tagName,
+  attributes = {},
+  style = {},
+  text
+) => {
+  const el = document.createElement(tagName);
 
-function pow(num)
-{
-    return num*num; 
-}
+  for (item in attributes) {
+    el.setAttribute(item, attributes[item]);
+  }
+  for (item in attributes) {
+    el.style[item] = attributes[item];
+  }
+  if (text) {
+    el.appendChild(document.createTextNode(text));
+  }
+  return el;
+};
 
+DomMan.prototype.updateAttr = (id, attributes = {}) => {
+  let el = DomMan.prototype.get(id);
+  if (el == null) return;
+  for (item in attributes) {
+    el.item = attributes[item];
+  }
+  return this;
+};
 
-var CollectionUtil = {}
+DomMan.prototype.updateStyle = (id, style = {}) => {
+  let el = DomMan.prototype.get(id);
+  if (el == null) return;
+  for (item in style) {
+    el.setAttribute(item, style[item]);
+  }
+  return this;
+};
 
-CollectionUtil.forEach = function(collection, callback) {
+DomMan.prototype.updateText = (id, text) => {
+  let el = DomMan.prototype.get(id);
+  if (el == null) return;
+  el.textContent = text;
+  return this;
+};
 
+DomMan.prototype.updateText = (id, text) => {
+  let el = DomMan.prototype.get(id);
+  if (el == null) return;
+  el.innderHTML = text;
+  return this;
+};
 
-    for (let index = 0; index < array.length; index++) {
-        const element = array[index];
-        callback(element, array, i)
-        
-    }
-}
+DomMan.prototype.on = (event, elementId, callback) => {
+  let el = DomMan.prototype.get(id);
+  if (el == null) return;
+  el.addEventListener(event, callback);
+  return this;
+};
 
-CollectionUtil.filter   = function(collection, callback) {
-    let temp = []
-    for (let index = 0; index < collection.length; index++) {
-        const element = collection[index];
-        if(callback(element))
-            temp.push(element)
-    }
+DomMan.prototype.getText = id => {
+  let el = DomMan.prototype.get(id);
+  if (el == null) return;
+  return el.textContent;
+};
 
-    return temp;
-}
+DomMan.prototype.getHtml = id => {
+  let el = DomMan.prototype.get(id);
+  if (el == null) return;
+  return el.innerHTML;
+};
 
-CollectionUtil.map  = function(collection, callback) {
-    let temp = [];
-    for (let index = 0; collection < array.length; index++) {
-        const element = arrcollectionay[index];
-        temp.push(callback(element))        
-    }
-    return temp
-}
+DomMan.prototype.getParent = id => {
+  let el = DomMan.prototype.get(id);
+  if (el == null) return;
+  return el.parentElement();
+};
 
-var arr = [0,1,2,3,4,5,6,7,8,9]
+DomMan.prototype.getNextSibling = id => {
+  let el = DomMan.prototype.get(id);
+  if (el == null) return;
+  return el.nextSibling();
+};
 
-var ans = CollectionUtil.filter( arr, (m) => {
-    return m < 5
-})
-console.log(ans)
+DomMan.prototype.getPreviousSibling = id => {
+  let el = DomMan.prototype.get(id);
+  if (el == null) return;
+  return el.previousSibling();
+};
+
+DomMan.prototype.getChildren = id => {
+  let el = DomMan.prototype.get(id);
+  if (el == null) return;
+  return el.children();
+};
+var Dom = new DomMan();
