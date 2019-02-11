@@ -114,4 +114,47 @@ DomMan.prototype.getChildren = id => {
   if (el == null) return;
   return el.children();
 };
-var Dom = new DomMan();
+var dom = new DomMan();
+
+const monthNames = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December"
+];
+
+var Calendar = function() {
+  this.date = new Date();
+  // console.log(this.daysInMonth(this.date.getMonth(), this.date.getYear()));
+  // console.log(this.getMonthNameByIndex(this.date.getMonth()));
+  // console.log(this.getMonthNameByIndex(this.date.getMonth()));
+  console.log(this.date);
+};
+
+Calendar.prototype.daysInMonth = (month, year) => {
+  return new Date(year, month, 0).getDate();
+};
+Calendar.prototype.getMonth = () => {
+  return this.date.getMonth();
+};
+Calendar.prototype.getMonthNameByIndex = index => {
+  return monthNames[index];
+};
+
+Calendar.prototype.setNextMonth = () => {
+  console.log(this.date);
+  // this.date.setMonth(this.date.getMonth() + 1);
+  return this;
+};
+
+var calendar = new Calendar();
+calendar.setNextMonth();
+// console.log(calendar.getMonthNameByIndex(calendar.getMonth()));
