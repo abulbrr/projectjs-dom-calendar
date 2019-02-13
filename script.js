@@ -1,296 +1,215 @@
-var DomMan = function() {
-  this.name = "DomMan";
+var CollectionUtils = {};
+CollectionUtils.forEach = function(collection, callback) {
+  if (collection.length == 0) return;
+  for (let index = 0; index < collection.length; index++) {
+    const element = collection[index];
+    callback(element, index);
+  }
 };
-DomMan.prototype.get = function(query) {
+
+CollectionUtils.max = function(collection) {
+  if (collection.length == 0) return;
+  let max = 0;
+  let times = 1;
   let element;
-  element = document.querySelector(query);
-  if (element == null) element = document.getElementById(query);
+  for (let index = 0; index < collection.length; index++) {
+    const elementLength = collection[index].atendees.length;
+    if (elementLength == max) {
+      times++;
+    } else if (elementLength > max) {
+      max = elementLength;
+      times = 1;
+      element = collection[index];
+    }
+  }
+  if (times == collection.length) {
+    alert("All events are equals");
+    return false;
+  }
+
   return element;
 };
 
-DomMan.prototype.getAll = function(query) {
-  let elements;
-  elements = document.querySelectorAll(query);
-  if (elements == null) elements = document.getElementsByClassName(query);
-  return element;
-};
-
-DomMan.prototype.addElement = function(element, parentElement) {
-  parentElement.appendChild(element);
-  return this;
-};
-
-DomMan.prototype.deleteElement = function(id) {
-  let el = DomMan.prototype.get(id);
-  if (el == null) return;
-  el.remove();
-  return this;
-};
-
-DomMan.prototype.getCopy = function(element) {
-  return element.cloneNode(true);
-};
-
-DomMan.prototype.createElement = function(
-  tagName,
-  attributes = {},
-  style = {},
-  text
-) {
-  const el = document.createElement(tagName);
-
-  for (item in attributes) {
-    el.setAttribute(item, attributes[item]);
+CollectionUtils.filter = function(collection, callback) {
+  let temp = [];
+  for (let index = 0; index < collection.length; index++) {
+    const element = collection[index];
+    if (callback(element)) temp.push(element);
   }
-  for (item in attributes) {
-    el.style[item] = attributes[item];
+
+  return temp;
+};
+
+CollectionUtils.find = function(collection, callback) {
+  for (let index = 0; index < collection.length; index++) {
+    const element = collection[index];
+    if (callback(element)) return element;
   }
-  if (text) {
-    el.appendChild(document.createTextNode(text));
+  return false;
+};
+
+CollectionUtils.map = function(collection, callback) {
+  let temp = [];
+  for (let index = 0; collection < array.length; index++) {
+    const element = arrcollectionay[index];
+    temp.push(callback(element));
   }
-  return el;
+  return temp;
 };
 
-DomMan.prototype.updateAttr = function(id, attributes = {}) {
-  let el = DomMan.prototype.get(id);
-  if (el == null) return;
-  for (item in attributes) {
-    el.item = attributes[item];
-  }
-  return this;
-};
-
-DomMan.prototype.updateStyle = function(id, style = {}) {
-  let el = DomMan.prototype.get(id);
-  if (el == null) return;
-  for (item in style) {
-    el.setAttribute(item, style[item]);
-  }
-  return this;
-};
-
-DomMan.prototype.appendText = function(el, text) {
-  if (el == null) return;
-  el.innerHTML += text;
-  return this;
-};
-
-DomMan.prototype.updateText = function(el, text) {
-  if (el == null) return;
-  el.innerHTML = text;
-  return this;
-};
-
-DomMan.prototype.on = function(event, elementId, callback) {
-  let el = DomMan.prototype.get(id);
-  if (el == null) return;
-  el.addEventListener(event, callback);
-  return this;
-};
-
-DomMan.prototype.getText = function(id) {
-  let el = DomMan.prototype.get(id);
-  if (el == null) return;
-  return el.textContent;
-};
-
-DomMan.prototype.getHtml = function(id) {
-  let el = DomMan.prototype.get(id);
-  if (el == null) return;
-  return el.innerHTML;
-};
-
-DomMan.prototype.getParent = function(id) {
-  let el = DomMan.prototype.get(id);
-  if (el == null) return;
-  return el.parentElement();
-};
-
-DomMan.prototype.getNextSibling = function(id) {
-  let el = DomMan.prototype.get(id);
-  if (el == null) return;
-  return el.nextSibling();
-};
-
-DomMan.prototype.getPreviousSibling = function(id) {
-  let el = DomMan.prototype.get(id);
-  if (el == null) return;
-  return el.previousSibling();
-};
-
-DomMan.prototype.getChildren = function(id) {
-  let el = DomMan.prototype.get(id);
-  if (el == null) return;
-  return el.children();
-};
 var dom = new DomMan();
 
-const monthNames = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December"
+var events = [
+  {
+    day: 1,
+    monthIndex: 1,
+    year: 2019
+  },
+  {
+    day: 15,
+    monthIndex: 1,
+    year: 2019
+  },
+  {
+    day: 23,
+    monthIndex: 11,
+    year: 2019
+  }
 ];
 
-function Calendar() {
-  this.name = "calendar";
-  this.date = new Date();
-}
+var calendarUi = {
+  calendar: new Calendar(),
+  rootElement: null,
+  currentMonthIndex: null,
+  today: null,
+  isDatePicker: false,
+  init: id => {
+    calendarUi.rootElement = dom.get(id);
+    calendarUi.today = calendarUi.calendar.getDayInMonth();
+    calendarUi.currentMonthIndex = calendarUi.calendar.getMonth();
+    calendarUi.isDatePicker = calendarUi.rootElement.tagName == "INPUT";
+    calendarUi.render();
+  },
 
-Calendar.prototype.daysInMonth = function(month, year) {
-  if (year == undefined) year = this.date.getFullYear();
-  if (month == undefined) month = this.date.getMonth();
-
-  console.log(year + " " + month);
-  return new Date(year, month + 1, 0).getDate();
-};
-Calendar.prototype.getMonth = function() {
-  return this.date.getMonth();
-};
-Calendar.prototype.getYear = function() {
-  return this.date.getFullYear();
-};
-Calendar.prototype.getDayInMonth = function() {
-  return this.date.getUTCDate();
-};
-
-Calendar.prototype.getMonthName = function(index) {
-  if (index == undefined) index = this.date.getMonth();
-  return monthNames[index];
-};
-
-Calendar.prototype.setNextMonth = function() {
-  this.date.setMonth(this.date.getMonth() + 1);
-  return this;
-};
-
-Calendar.prototype.setLastMonth = function() {
-  this.date.setMonth(this.date.getMonth() - 1);
-  return this;
-};
-
-Calendar.prototype.setNextYear = function() {
-  this.date.setFullYear(this.date.getFullYear() + 1);
-  return this;
-};
-
-Calendar.prototype.setLastYear = function() {
-  this.date.setFullYear(this.date.getFullYear() - 1);
-  return this;
-};
-
-function clicked(id) {
-  console.log("day clicked" + id);
-}
-
-var calendarr = new Calendar();
-
-function CalendarUI(elementId) {
-  this.dom = new DomMan();
-  this.calendar = new Calendar();
-  this.rootElement = dom.get(elementId);
-  this.today = this.calendar.getDayInMonth();
-  this.currentMonthIndex = this.calendar.getMonth();
-  return this;
-}
-
-CalendarUI.prototype.createMonthDays = function() {
-  var daysRoot = this.dom.createElement(
-    "div",
-    { id: "daysRoot", class: "row" },
-    {}
-  );
-
-  var day;
-  var daysInMonth = this.calendar.daysInMonth(
-    this.calendar.getMonth(),
-    this.calendar.getYear()
-  );
-  console.log(this.today + ", " + this.currentMonthIndex);
-  for (let index = 1; index < daysInMonth + 1; index++) {
-    var className;
-    if (
-      index == this.today &&
-      this.calendar.getMonth() == this.currentMonthIndex
-    )
-      className = "col s2 center-align red lighten-2";
-    else className = "col s2 center-align z-depth-1";
-
-    day = this.dom.createElement(
+  createMonthDays: function() {
+    var daysRoot = dom.createElement(
       "div",
-      {
-        id: index + "day",
-        onclick: "clicked(this.id)",
-        class: className
-      },
-      {},
-      index
+      { id: "daysRoot", class: "row" },
+      {}
     );
 
-    daysRoot.appendChild(day);
+    var month = calendarUi.calendar.getMonth();
+    var year = calendarUi.calendar.getYear();
+    var day;
+    var daysInMonth = calendarUi.calendar.daysInMonth(month, year);
+    var monthEvents = calendarUi.eventsThisMonth(month);
+    for (let index = 1; index < daysInMonth + 1; index++) {
+      var className;
+      var hasEvent = false;
+      if (monthEvents.length != 0) {
+        hasEvent = CollectionUtils.find(monthEvents, e => {
+          return e.day == index;
+        });
+      }
+
+      if (index == calendarUi.today && month == calendarUi.currentMonthIndex)
+        className = "col s2 center-align green lighten-2";
+      else if (hasEvent != false)
+        className = "col s2 center-align red lighten-2";
+      else className = "col s2 center-align z-depth-1";
+
+      day = dom.createElement(
+        "div",
+        {
+          id: index + "day",
+          onclick: "dayClicked(this.id)",
+          class: className
+        },
+        {},
+        index
+      );
+
+      daysRoot.appendChild(day);
+    }
+    return daysRoot;
+  },
+  eventsThisMonth: month => {
+    return events.filter(e => {
+      return e.monthIndex == month;
+    });
+  },
+  createIcon: function(id, iconName) {
+    var icon = (leftArrow = dom.createElement(
+      "i",
+      { id: id, class: "material-icons", onclick: "arrowClicked(this.id)" },
+      {},
+      iconName
+    ));
+
+    return icon;
+  },
+  createMonths: function() {
+    var daysRoot = dom.createElement(
+      "div",
+      { id: "monthsRoot", class: "row" },
+      {}
+    );
+    var el;
+    for (let index = 0; index < 12; index++) {
+      el = dom.createElement(
+        "p",
+        {
+          id: index,
+          class: "btn-small col s3",
+          onclick: "setMonth(this.id)"
+        },
+        {},
+        this.calendar.getMonthName(index)
+      );
+      dom.addElement(el, daysRoot);
+    }
+    return daysRoot;
+  },
+
+  render: function() {
+    calendarUi.rootElement.innerHTML = "";
+    dom.createElement("div", { id: "navigationBar" }, {});
+    var yearbar = dom.createElement(
+      "div",
+      { id: "yearBar", class: "row center-align blue-grey" },
+      {}
+    );
+
+    var leftArrow = calendarUi.createIcon("yearLeft", "keyboard_arrow_left");
+    var rightArrow = calendarUi.createIcon("yearRight", "keyboard_arrow_right");
+
+    yearbar.appendChild(leftArrow);
+    dom.appendText(yearbar, calendarUi.calendar.getYear());
+    yearbar.appendChild(rightArrow);
+
+    var monthbar = dom.createElement(
+      "div",
+      { id: "monthBar", class: "row center-align blue-grey lighten-4" },
+      {}
+    );
+    leftArrow = calendarUi.createIcon("monthLeft", "keyboard_arrow_left");
+    rightArrow = calendarUi.createIcon("monthRight", "keyboard_arrow_right");
+
+    monthbar.appendChild(leftArrow);
+    dom.appendText(monthbar, calendarUi.calendar.getMonthName());
+    monthbar.appendChild(rightArrow);
+
+    var monthDays = calendarUi.createMonthDays();
+    var months = calendarUi.createMonths();
+
+    calendarUi.rootElement.appendChild(yearbar);
+    calendarUi.rootElement.appendChild(monthbar);
+    calendarUi.rootElement.appendChild(monthDays);
+    calendarUi.rootElement.appendChild(months);
   }
-  return daysRoot;
 };
 
-CalendarUI.prototype.createIcon = function(id, iconName) {
-  var icon = (leftArrow = this.dom.createElement(
-    "i",
-    { id: id, class: "material-icons", onclick: "arrowClicked(this.id)" },
-    {},
-    iconName
-  ));
-
-  return icon;
-};
-
-CalendarUI.prototype.init = function() {
-  this.render();
-
-  return this;
-};
-
-CalendarUI.prototype.render = function() {
-  this.rootElement.innerHTML = "";
-  this.dom.createElement("div", { id: "navigationBar" }, {});
-  var yearbar = this.dom.createElement(
-    "div",
-    { id: "yearBar", class: "row center-align blue-grey" },
-    {}
-  );
-
-  var leftArrow = this.createIcon("yearLeft", "keyboard_arrow_left");
-  var rightArrow = this.createIcon("yearRight", "keyboard_arrow_right");
-
-  yearbar.appendChild(leftArrow);
-  this.dom.appendText(yearbar, this.calendar.getYear());
-  yearbar.appendChild(rightArrow);
-
-  var monthbar = this.dom.createElement(
-    "div",
-    { id: "monthBar", class: "row center-align blue-grey lighten-4" },
-    {}
-  );
-  leftArrow = this.createIcon("monthLeft", "keyboard_arrow_left");
-  rightArrow = this.createIcon("monthRight", "keyboard_arrow_right");
-
-  monthbar.appendChild(leftArrow);
-  this.dom.appendText(monthbar, this.calendar.getMonthName());
-  monthbar.appendChild(rightArrow);
-
-  var monthDays = this.createMonthDays();
-  this.rootElement.appendChild(yearbar);
-  this.rootElement.appendChild(monthbar);
-  this.rootElement.appendChild(monthDays);
-};
-var calendarUi = new CalendarUI("app").init();
+calendarUi.init("app");
 
 function arrowClicked(id) {
   switch (id) {
@@ -309,3 +228,13 @@ function arrowClicked(id) {
   }
   calendarUi.render();
 }
+function dayClicked(id) {
+  console.log("day clicked" + id);
+}
+
+function setMonth(id) {
+  calendarUi.calendar.setMonth(id);
+  calendarUi.render();
+}
+
+// calendarUi.init();
