@@ -13,6 +13,16 @@ const monthNames = [
   "December"
 ];
 
+const weekDays = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday"
+];
+
 function Calendar() {
   this.name = "calendar";
   this.date = new Date();
@@ -22,7 +32,6 @@ Calendar.prototype.daysInMonth = function(month, year) {
   if (year == undefined) year = this.date.getFullYear();
   if (month == undefined) month = this.date.getMonth();
 
-  console.log(year + " " + month);
   return new Date(year, month + 1, 0).getDate();
 };
 Calendar.prototype.getMonth = function() {
@@ -33,6 +42,12 @@ Calendar.prototype.getYear = function() {
 };
 Calendar.prototype.getDayInMonth = function() {
   return this.date.getUTCDate();
+};
+Calendar.prototype.getWeekDay = function() {
+  return this.date.getDay();
+};
+Calendar.prototype.getWeekDayName = function(index) {
+  return weekDays[index];
 };
 
 Calendar.prototype.getDate = function() {
@@ -48,6 +63,7 @@ Calendar.prototype.setMonth = function(index) {
   this.date.setMonth(index);
   return this;
 };
+
 Calendar.prototype.setNextMonth = function() {
   this.date.setMonth(this.date.getMonth() + 1);
   return this;

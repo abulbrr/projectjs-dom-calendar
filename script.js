@@ -63,35 +63,102 @@ var events = [
   {
     day: 1,
     monthIndex: 1,
-    year: 2019
+    year: 2019,
+    events: ["event1", "event2", "event3"]
   },
   {
     day: 15,
     monthIndex: 1,
-    year: 2019
+    year: 2019,
+    events: ["only one"]
   },
   {
     day: 23,
     monthIndex: 11,
-    year: 2019
+    year: 2019,
+    events: ["huh"]
   }
 ];
 
+const calendarView = {
+  WEEK: 0,
+  MONTH: 1
+};
+
 var calendarUi = {
   calendar: new Calendar(),
+  currentView: calendarView.MONTH,
+  isHidden: true,
+  calendarDiv: null,
   rootElement: null,
   currentMonthIndex: null,
+  selectedDay: null,
   today: null,
   isDatePicker: false,
-  init: id => {
+
+  init: (id, properties) => {
     calendarUi.rootElement = dom.get(id);
     calendarUi.today = calendarUi.calendar.getDayInMonth();
+    calendarUi.selectedDay = calendarUi.today;
     calendarUi.currentMonthIndex = calendarUi.calendar.getMonth();
     calendarUi.isDatePicker = calendarUi.rootElement.tagName == "INPUT";
+
+    if (properties != undefined)
+      for (prop in properties) {
+        calendarUi[prop] = properties[prop];
+      }
+
     calendarUi.render();
   },
 
+  createWeekDays: function() {
+    var daysRoot = dom.createElement(
+      "div",
+      { id: "daysRoot", class: "row" },
+      {}
+    );
+
+    var month = calendarUi.calendar.getMonth();
+    var year = calendarUi.calendar.getYear();
+    var day;
+    var daysInWeek = 7;
+    var monthEvents = calendarUi.eventsThisMonth(month);
+    var weekStart =
+      calendarUi.calendar.getDayInMonth() - calendarUi.calendar.getWeekDay();
+    var weekEnd = weekStart + daysInWeek;
+
+    for (let index = weekStart; index < weekEnd; index++) {
+      var className;
+      var hasEvent = false;
+      if (monthEvents.length != 0) {
+        hasEvent = CollectionUtils.find(monthEvents, e => {
+          return e.day == index;
+        });
+      }
+
+      if (index == calendarUi.today && month == calendarUi.currentMonthIndex)
+        className = "col s12 center-align green lighten-2";
+      else if (hasEvent != false)
+        className = "col s12 center-align red lighten-2";
+      else className = "col s12 center-align z-depth-1";
+      day = dom.createElement(
+        "div",
+        {
+          id: index + "day",
+          onclick: "dayClicked(this.id)",
+          class: className
+        },
+        {},
+        index + " " + calendarUi.calendar.getWeekDayName(index - weekStart)
+      );
+
+      daysRoot.appendChild(day);
+    }
+    return daysRoot;
+  },
+
   createMonthDays: function() {
+    var isDatePicker = calendarUi.isDatePicker;
     var daysRoot = dom.createElement(
       "div",
       { id: "daysRoot", class: "row" },
@@ -114,7 +181,7 @@ var calendarUi = {
 
       if (index == calendarUi.today && month == calendarUi.currentMonthIndex)
         className = "col s2 center-align green lighten-2";
-      else if (hasEvent != false)
+      else if (hasEvent != false && isDatePicker == false)
         className = "col s2 center-align red lighten-2";
       else className = "col s2 center-align z-depth-1";
 
@@ -134,9 +201,16 @@ var calendarUi = {
     return daysRoot;
   },
   eventsThisMonth: month => {
+    if (month == undefined) month = calendarUi.calendar.getMonth();
     return events.filter(e => {
       return e.monthIndex == month;
     });
+  },
+  eventsInSelectedDay: () => {
+    var eventsToday = CollectionUtils.find(events, e => {
+      return e.day == calendarUi.selectedDay;
+    });
+    if (eventsToday != false) return eventsToday.events;
   },
   createIcon: function(id, iconName) {
     var icon = (leftArrow = dom.createElement(
@@ -170,53 +244,148 @@ var calendarUi = {
     }
     return daysRoot;
   },
-
-  render: function() {
-    calendarUi.rootElement.innerHTML = "";
-    dom.createElement("div", { id: "navigationBar" }, {});
-    var yearbar = dom.createElement(
+  createViewsButtons: function() {
+    var viewsBar = dom.createElement(
       "div",
-      { id: "yearBar", class: "row center-align blue-grey" },
+      { id: "viewsBar", class: "row center-align blue-grey" },
       {}
     );
+    monthView = dom.createElement(
+      "p",
+      {
+        class: "btn-small col s3",
+        onclick: "setView(1)"
+      },
+      {},
+      "Months View"
+    );
+    dom.addElement(monthView, viewsBar);
+    weekView = dom.createElement(
+      "p",
+      {
+        value: calendarView.WEEK,
+        class: "btn-small col s3",
+        onclick: "setView(0)"
+      },
+      {},
+      "Week View"
+    );
+    dom.addElement(weekView, viewsBar);
+    return viewsBar;
+  },
 
-    var leftArrow = calendarUi.createIcon("yearLeft", "keyboard_arrow_left");
-    var rightArrow = calendarUi.createIcon("yearRight", "keyboard_arrow_right");
+  render: function() {
+    var isDatePicker = calendarUi.isDatePicker;
+    console.log(isDatePicker);
+    calendarUi.rootElement.innerHTML = "";
+    if (calendarUi.calendarDiv != null) {
+      calendarUi.calendarDiv.innerHTML = "";
+    } else {
+      calendarUi.calendarDiv = dom.createElement("div", { id: "calendar" }, {});
+      if (isDatePicker) {
+        dom.on("focus", calendarUi.rootElement, () => {
+          calendarUi.isHidden = false;
+          calendarUi.render();
+        });
+      }
+    }
 
-    yearbar.appendChild(leftArrow);
-    dom.appendText(yearbar, calendarUi.calendar.getYear());
-    yearbar.appendChild(rightArrow);
+    if (isDatePicker) {
+      calendarUi.currentView = calendarView.MONTH;
+      if (calendarUi.isHidden) {
+        dom.css(this.calendarDiv, "display", "none");
+      } else {
+        dom.css(this.calendarDiv, "display", "block");
+      }
+      dom.addElement(calendarUi.calendarDiv, dom.get("body"));
+    } else {
+      calendarUi.isHidden = false;
+      dom.addElement(calendarUi.calendarDiv, calendarUi.rootElement);
 
-    var monthbar = dom.createElement(
+      var yearBar = dom.createElement(
+        "div",
+        { id: "yearBar", class: "row center-align blue-grey" },
+        {}
+      );
+
+      var leftArrow = calendarUi.createIcon("yearLeft", "keyboard_arrow_left");
+      var rightArrow = calendarUi.createIcon(
+        "yearRight",
+        "keyboard_arrow_right"
+      );
+
+      yearBar.appendChild(leftArrow);
+      dom.appendText(yearBar, calendarUi.calendar.getYear());
+      yearBar.appendChild(rightArrow);
+      calendarUi.calendarDiv.appendChild(yearBar);
+    }
+
+    var monthBar = dom.createElement(
       "div",
       { id: "monthBar", class: "row center-align blue-grey lighten-4" },
       {}
     );
     leftArrow = calendarUi.createIcon("monthLeft", "keyboard_arrow_left");
     rightArrow = calendarUi.createIcon("monthRight", "keyboard_arrow_right");
+    var viewsBar = calendarUi.createViewsButtons();
 
-    monthbar.appendChild(leftArrow);
-    dom.appendText(monthbar, calendarUi.calendar.getMonthName());
-    monthbar.appendChild(rightArrow);
+    monthBar.appendChild(leftArrow);
+    dom.appendText(monthBar, calendarUi.calendar.getMonthName());
+    monthBar.appendChild(rightArrow);
+    var daysView;
+    if (this.currentView == calendarView.MONTH)
+      daysView = calendarUi.createMonthDays();
+    else daysView = calendarUi.createWeekDays();
 
-    var monthDays = calendarUi.createMonthDays();
     var months = calendarUi.createMonths();
+    calendarUi.calendarDiv.appendChild(monthBar);
+    calendarUi.calendarDiv.appendChild(daysView);
+    if (!isDatePicker) {
+      calendarUi.calendarDiv.appendChild(months);
+      calendarUi.calendarDiv.appendChild(viewsBar);
+      calendarUi.renderEvents();
+    }
+  },
+  renderEvents: function() {
+    var rootEl = dom.createElement("div", {}, {});
+    dom.addElement(rootEl, calendarUi.rootElement);
+    rootEl.innerHTML = "Events this day: ";
+    var el;
+    var eventsThisMonth = this.eventsThisMonth();
 
-    calendarUi.rootElement.appendChild(yearbar);
-    calendarUi.rootElement.appendChild(monthbar);
-    calendarUi.rootElement.appendChild(monthDays);
-    calendarUi.rootElement.appendChild(months);
+    if (eventsThisMonth.length != 0) {
+      var eventsToday = calendarUi.eventsInSelectedDay();
+      if (eventsToday != undefined && eventsToday.length != 0) {
+        for (let index = 0; index < eventsToday.length; index++) {
+          el = dom.createElement("li", {}, {}, eventsToday[index]);
+          dom.addElement(el, rootEl);
+        }
+        return;
+      }
+    }
+    el = dom.createElement("h5", {}, {}, "No Events this day");
+    dom.addElement(el, rootEl);
   }
 };
 
 calendarUi.init("app");
 
+// calendarUi.init("input");
+
 function arrowClicked(id) {
   switch (id) {
     case "monthRight":
+      if (calendarUi.isDatePicker && calendarUi.calendar.getMonth() >= 11)
+        break;
       calendarUi.calendar.setNextMonth();
       break;
     case "monthLeft":
+      if (
+        calendarUi.isDatePicker &&
+        calendarUi.calendar.getMonth() <= calendarUi.currentMonthIndex
+      )
+        break;
+
       calendarUi.calendar.setLastMonth();
       break;
     case "yearLeft":
@@ -229,12 +398,27 @@ function arrowClicked(id) {
   calendarUi.render();
 }
 function dayClicked(id) {
-  console.log("day clicked" + id);
+  id = id.replace("day", "");
+  calendarUi.selectedDay = id;
+  if (calendarUi.isDatePicker) {
+    calendarUi.rootElement.value =
+      id +
+      " / " +
+      calendarUi.calendar.getMonthName() +
+      " / " +
+      calendarUi.calendar.getYear();
+
+    calendarUi.isHidden = true;
+  }
+
+  calendarUi.render();
 }
 
 function setMonth(id) {
   calendarUi.calendar.setMonth(id);
   calendarUi.render();
 }
-
-// calendarUi.init();
+function setView(viewId) {
+  calendarUi.currentView = viewId;
+  calendarUi.render();
+}

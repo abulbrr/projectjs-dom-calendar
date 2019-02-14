@@ -31,6 +31,10 @@ DomMan.prototype.getCopy = function(element) {
   return element.cloneNode(true);
 };
 
+DomMan.prototype.css = function(el, prop, value) {
+  el.setAttribute("style", prop + ":" + value);
+};
+
 DomMan.prototype.createElement = function(
   tagName,
   attributes = {},
@@ -81,8 +85,7 @@ DomMan.prototype.updateText = function(el, text) {
   return this;
 };
 
-DomMan.prototype.on = function(event, elementId, callback) {
-  let el = DomMan.prototype.get(id);
+DomMan.prototype.on = function(event, el, callback) {
   if (el == null) return;
   el.addEventListener(event, callback);
   return this;
